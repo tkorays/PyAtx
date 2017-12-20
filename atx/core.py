@@ -1,13 +1,15 @@
-import unittest
 import logging.config as logging_config
-import os, sys
-from config.utils import *
-from atx.config import AtxConfig
+import os
+import sys
+import unittest
 import ddt
-
+import logging
+from atx.config import AtxConfig
 
 DdtDecorator = ddt.ddt
 DdtData = ddt.data
+MainLog = logging
+MsgLog = logging.getLogger('message')
 
 
 class TestCase(unittest.TestCase):
