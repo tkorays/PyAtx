@@ -1,7 +1,6 @@
 from atx.core import *
-import testcases
 
 
-t = TestManager(start_dir="testcases/test_001_a")
-
+t = TestManager(name="Start A New Test For Fun")
 t.run()
+

@@ -1,7 +1,13 @@
 import unittest
-import logging
-import logging.config
-import os
+import logging.config as logging_config
+import os, sys
+from config.utils import *
+from atx.config import AtxConfig
+import ddt
+
+
+DdtDecorator = ddt.ddt
+DdtData = ddt.data
 
 
 class TestCase(unittest.TestCase):
@@ -9,22 +15,53 @@ class TestCase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         super().__init__(methodName=methodName)
 
+    def run(self, result=None):
+        MainLog.info('')
+        MainLog.info('~'*45)
+        MainLog.info('TestCase Name   : {}.{}'.format(self.__class__.__name__, self._testMethodName))
+        MainLog.info('TestCase Module : {}'.format(self.__module__))
+        MainLog.info('~'*45)
+        super().run(result)
+        MainLog.info('Test Done!')
+
+
+class TestRunner(unittest.TextTestRunner):
+    def run(self, test):
+        pass
+
 
 class TestManager:
-    def __init__(self, name="test", start_dir='testcases', pattern='test_*.py', top_level_dir='.'):
+    VERSION_MAJOR = 1
+    VERSION_MINOR = 0
+
+    def __init__(self, name="test"):
         self.name = name
         self.loader = unittest.TestLoader()
-        self.test_cases = self.loader.discover(start_dir=start_dir, pattern=pattern, top_level_dir=top_level_dir)
-        self.runner = unittest.TextTestRunner(verbosity=2)
+        self.testsuite = unittest.TestSuite()
+        self.result = None
+        self.runner = unittest.TextTestRunner(verbosity=2, stream=sys.stderr)
+        self.config = AtxConfig('config/atx.ini')
 
-        logging.config.fileConfig(os.path.join('.', 'config/logging.ini'))
+        logging_config.fileConfig(os.path.join('.', self.config.get_log_config()))
 
-    def run(self):
-        logging.info("===============================")
-        logging.info("======= auto test start =======")
-        logging.info("===============================")
-        self.runner.run(self.test_cases)
-        logging.info("===============================")
-        logging.info("======== auto test end ========")
-        logging.info("===============================")
+    def run(self, start='testcases', pattern='test_*.py'):
+        if isinstance(start, list) or isinstance(start, tuple):
+            for t in start:
+                self.testsuite.addTests(self.loader.discover(start_dir=t, pattern=pattern))
+        else:
+            self.testsuite.addTests(self.loader.discover(start_dir=start, pattern=pattern))
+
+        MainLog.info("Atx - Auto Test Ex Version {}.{}".format(self.VERSION_MAJOR, self.VERSION_MINOR))
+
+        MainLog.info("=============================================")
+        MainLog.info("============== auto test start ==============")
+        MainLog.info("=============================================")
+        self.result = self.runner.run(self.testsuite)
+        MainLog.info("=============================================")
+        MainLog.info("=============== auto test end ===============")
+        MainLog.info("=============================================")
+        return self.result
+
+
+
 
