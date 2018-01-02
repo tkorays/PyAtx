@@ -17,6 +17,11 @@ class TestCase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         super().__init__(methodName=methodName)
 
+    def assertTrue(self, expr, msg=""):
+        if msg:
+            MainLog.info(msg)
+        unittest.TestCase.assertTrue(self, expr, msg+" Fail!")
+
     def run(self, result=None):
         MainLog.info('')
         MainLog.info('~'*45)
