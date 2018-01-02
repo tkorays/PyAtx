@@ -51,12 +51,31 @@ class TestManager:
 
         logging_config.fileConfig(os.path.join('.', self.config.get_log_config()))
 
-    def run(self, start='testcases', pattern='test_*.py'):
+    def fetch_tests(self, suite):
+        res = []
+        if isinstance(suite, TestCase):
+            return [suite, ]
+
+        for t in suite:
+            if hasattr(t, 'countTestCases'):
+                if t.countTestCases:
+                    res.extend(self.fetch_tests(t))
+            elif t:
+                res.append(t)
+        return res
+
+    def discover(self, start='testcases', pattern='test_*.py'):
+        tcs = unittest.TestSuite()
         if isinstance(start, list) or isinstance(start, tuple):
             for t in start:
-                self.testsuite.addTests(self.loader.discover(start_dir=t, pattern=pattern))
+                tcs.addTests(self.loader.discover(start_dir=t, pattern=pattern))
         else:
-            self.testsuite.addTests(self.loader.discover(start_dir=start, pattern=pattern))
+            tcs.addTests(self.loader.discover(start_dir=start, pattern=pattern))
+        return self.fetch_tests(tcs)
+
+    def run(self, tests=()):
+        for i in tests:
+            self.testsuite.addTest(i)
 
         MainLog.info("Atx - Auto Test Ex Version {}.{}".format(self.VERSION_MAJOR, self.VERSION_MINOR))
 
