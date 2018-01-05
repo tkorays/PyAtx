@@ -5,6 +5,11 @@
 *.pyc
 .idea/
 
+# Visual Studio Python Project files
+.vs/
+*.pyproj
+*.sln
+
 *.log
 
 
